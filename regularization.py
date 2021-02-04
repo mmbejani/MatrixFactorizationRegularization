@@ -70,6 +70,7 @@ class DLRF(nn.Module):
         super().__init__()
         self.net = net
         self.damped = damped
+        self.k = 1
 
     def approximate_lrf_tensor_kernel_filter_wise(self, w):
         for i in range(w.shape[0]):
