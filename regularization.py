@@ -15,7 +15,8 @@ class DSR(nn.Module):
         self.net = net
         self.device = device
 
-    def optimal_d(self, s):
+    @staticmethod
+    def optimal_d(s):
         variance = np.std(s)
         mean = np.average(s)
         for i in range(s.shape[0] - 1):
