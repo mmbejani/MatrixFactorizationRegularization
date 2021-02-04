@@ -71,11 +71,12 @@ class DSR(nn.Module):
 
 class DLRF(nn.Module):
 
-    def __init__(self, net: nn.Module, damped: Callable = None):
+    def __init__(self, net: nn.Module, damped: Callable = None, device='cuda'):
         super().__init__()
         self.net = net
         self.damped = damped
         self.k = 1
+        self.device = device
 
     def approximate_lrf_tensor_kernel_filter_wise(self, w):
         for i in range(w.shape[0]):
