@@ -100,6 +100,8 @@ class DLRF(nn.Module):
                 condition_number = j_theta_norm * theta_norm / loss_value
                 condition_number_list.append(condition_number)
 
+        return condition_number_list
+
     def regularize(self, train_loss, epoch):
         condition_number_list = self.compute_condition_number(train_loss)
         max_condition_number = max(condition_number_list)
