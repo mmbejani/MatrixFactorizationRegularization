@@ -53,15 +53,20 @@ class DSR(nn.Module):
                     if len(p.size()) == 2 and np.prod(p.size()) < 10000:
                         w = p.data.detach().cpu().numpy()
                         w = self.approximate_svd_matrix(w)
+                        if self.device == 'cuda':
+                            p.data = torch.tensor(w,requires_grad=True).cuda()
+                        else:
+                            p.data = torch.tensor(w,requires_grad=True)
 
                     elif len(p.size()) == 4:
                         w = p.data.detach().cpu().numpy()
                         w = self.approximate_svd_tensor(w)
+                        if self.device == 'cuda':
+                            p.data = torch.tensor(w,requires_grad=True).cuda()
+                        else:
+                            p.data = torch.tensor(w,requires_grad=True)
                     
-                    if self.device == 'cuda':
-                        p.data = torch.tensor(w,requires_grad=True).cuda()
-                    else:
-                        p.data = torch.tensor(w,requires_grad=True)
+                    
 
 
 class DLRF(nn.Module):
