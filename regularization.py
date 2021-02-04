@@ -92,6 +92,7 @@ class DLRF(nn.Module):
 
     def compute_condition_number(self, loss_value: torch.Tensor, verbose=False):
         params = list(self.net.parameters())
+        print(len(params))
         condition_number_list = list()
         for p in params:
             if len(p.size()) > 1:
