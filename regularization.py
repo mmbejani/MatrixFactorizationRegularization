@@ -34,14 +34,14 @@ class DSR(nn.Module):
         u, s, v = linalg.svd(w)
         for i in range(n1):
             for j in range(n2):
-                ds.append(self.optimal_d(s[i, j]))
+                ds.append(DSR.optimal_d(s[i, j]))
         d = int(np.mean(ds))
         w = np.matmul(u[..., 0:d], s[..., 0:d, None] * v[..., 0:d, :])
         return w
 		
     def approximate_svd_matrix(self, w):
         u, s, v = linalg.svd(w)
-        d = self.optimal_d(s)
+        d = DSR.optimal_d(s)
         w = np.matmul(u[:, 0:d], np.matmul(np.diag(s[0:d]), v[:,0:d]))
         return w
 
