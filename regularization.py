@@ -71,12 +71,13 @@ class DSR(nn.Module):
 
 class DLRF(nn.Module):
 
-    def __init__(self, net: nn.Module, damped: Callable = None, device='cuda'):
+    def __init__(self, net: nn.Module, M:float = 2.0, damped: Callable = None, device='cuda'):
         super().__init__()
         self.net = net
         self.damped = damped
         self.k = 1
         self.device = device
+        self.M = M
 
     def approximate_lrf_tensor_kernel_filter_wise(self, w):
         for i in range(w.shape[0]):
@@ -110,25 +111,26 @@ class DLRF(nn.Module):
 
         return condition_number_list
 
-    def regularize(self, train_loss, epoch):
-        condition_number_list = self.compute_condition_number(train_loss)
-        max_condition_number = max(condition_number_list)
-        counter = 0
-        for p in list(self.net.parameters()):
-            if len(p.size()) > 1:
-                c = condition_number_list[counter] / max_condition_number
-                r = np.random.rand()
-                if self.damped is not None:
-                    r *= 1/(self.damped(epoch) + 1)
-                w = p.detach().cpu().numpy()
-                if r < c:
-                    if len(w.shape) == 2 and np.prod(w.shape) < 1000:
-                            w = self.approximation_nmf_matrix(w)
-                    if len(w.shape) == 4:
-                            w = self.approximate_lrf_tensor_kernel_filter_wise(w)
-                    if self.device == 'cuda':
-                        p.data = torch.tensor(w,requires_grad=True).cuda()
-                    else:
-                        p.data = torch.tensor(w,requires_grad=True)
-                counter += 1
-                    
+    def regularize(self, train_loss, test_loss, epoch):
+        v = test_loss / train_loss
+        if v > self.M:
+            condition_number_list = self.compute_condition_number(train_loss)
+            max_condition_number = max(condition_number_list)
+            counter = 0
+            for p in list(self.net.parameters()):
+                if len(p.size()) > 1:
+                    c = condition_number_list[counter] / max_condition_number
+                    r = np.random.rand()
+                    if self.damped is not None:
+                        r *= 1/(self.damped(epoch) + 1)
+                    w = p.detach().cpu().numpy()
+                    if r < c:
+                        if len(w.shape) == 2 and np.prod(w.shape) < 1000:
+                                w = self.approximation_nmf_matrix(w)
+                        if len(w.shape) == 4:
+                                w = self.approximate_lrf_tensor_kernel_filter_wise(w)
+                        if self.device == 'cuda':
+                            p.data = torch.tensor(w,requires_grad=True).cuda()
+                        else:
+                            p.data = torch.tensor(w,requires_grad=True)
+                    counter += 1
