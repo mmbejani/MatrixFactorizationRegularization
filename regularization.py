@@ -83,7 +83,7 @@ class DLRF(nn.Module):
             for j in range(w.shape[1]):
                 m = np.min(w[i, j, :, :])
                 w[i, j, :, :] -= m
-                mdl = NMF(n_components=self.k, max_iter=5, tol=1.0)
+                mdl = NMF(n_components=self.k, max_iter=2, tol=1.0)
                 W = mdl.fit_transform(np.reshape(w[i, j, :, :], [w.shape[2], w.shape[3]]))
                 H = mdl.components_
                 w[i, j, :, :] = np.matmul(W, H) + m
