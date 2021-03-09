@@ -71,13 +71,13 @@ class DSR(nn.Module):
 
 class DLRF(nn.Module):
 
-    def __init__(self, net: nn.Module, M:float = 2.0, damped: Callable = None, device='cuda'):
+    def __init__(self, net: nn.Module, damped: Callable = None, device='cuda'):
         super().__init__()
         self.net = net
         self.damped = damped
         self.k = 1
         self.device = device
-        self.M = M
+        self.hist = list()
 
     def approximate_lrf_tensor_kernel_filter_wise(self, w):
         for i in range(w.shape[0]):
@@ -113,7 +113,8 @@ class DLRF(nn.Module):
 
     def regularize(self, train_loss, test_loss, epoch):
         v = test_loss / train_loss
-        if v > self.M:
+		self.hist.append(v)
+        if len(self.hist) > 3 and (self.hist[-1] - self.hist[-2]) > 0 and (self.hist[-2] - self.hist[-3]) > 0:
             condition_number_list = self.compute_condition_number(train_loss)
             max_condition_number = max(condition_number_list)
             counter = 0
